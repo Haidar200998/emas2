@@ -1,5 +1,5 @@
 import streamlit as st
-import numpy as np
+import pandas as pd
 import pickle
 
 # Fungsi untuk memuat model
@@ -25,13 +25,14 @@ data_inflasi = st.number_input('Masukkan Data Inflasi (dalam persen, contoh: mas
 model_option = st.selectbox("Pilih Model untuk Prediksi:", ['Decision Tree', 'Random Forest', 'AdaBoost'])
 
 # Memilih model berdasarkan pilihan pengguna
-model = {'Decision Tree': dt_model, 'Random Forest': rf_model, 'AdaBoost': ada_model}[model_option]
+model = {'Decision Tree': dt_model, 'Random Forest': rf_model, 'AdaBoost': ada_model}.get(model_option)
 
 # Tombol prediksi
 if st.button("Prediksi Harga"):
     inflasi_desimal = data_inflasi / 100  # Konversi inflasi ke bentuk desimal
-    inputs = np.array([[ihsg, kurs_jual, inflasi_desimal]])
-    predicted_price = model.predict(inputs)[0]
+    # Membuat DataFrame dengan nama kolom yang sesuai untuk prediksi
+    input_df = pd.DataFrame([[ihsg, kurs_jual, inflasi_desimal]], columns=['IHSG', 'Kurs Jual', 'Data Inflasi'])
+    predicted_price = model.predict(input_df)[0]
     
     st.write("")
     st.subheader(f"Harga Emas yang Diprediksi: Rp {predicted_price:,.2f} menggunakan model {model_option}")
