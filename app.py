@@ -2,46 +2,36 @@ import streamlit as st
 import numpy as np
 import pickle
 
-# Memuat model yang telah disimpan
-with open('DecisionTree_best_model.pkl', 'rb') as file:
-    dt_model = pickle.load(file)
-with open('RandomForest_best_model.pkl', 'rb') as file:
-    rf_model = pickle.load(file)
-with open('AdaBoost_best_model.pkl', 'rb') as file:
-    ada_model = pickle.load(file)
+# Fungsi untuk memuat model
+def load_model(model_name):
+    with open(model_name, 'rb') as f:
+        return pickle.load(f)
 
-# Mengatur konfigurasi halaman Streamlit
-st.set_page_config(page_title="Gold Price Prediction", page_icon=":moneybag:")
+# Memuat model
+dt_model = load_model('DecisionTree_best_model.pkl')
+rf_model = load_model('RandomForest_best_model.pkl')
+ada_model = load_model('AdaBoost_best_model.pkl')
 
-# Membuat judul dan deskripsi aplikasi
-st.title("Gold Price Prediction")
-st.write("Predict the gold price using Decision Tree, Random Forest, or AdaBoost models.")
+st.set_page_config(page_title="Prediksi Harga Emas", page_icon=":money_with_wings:")
 
-# Membuat input untuk pengguna
-ihsg = st.number_input('Enter IHSG Value', format="%.2f")
-kurs_jual = st.number_input('Enter Exchange Rate (Kurs Jual)', format="%.2f")
-data_inflasi = st.number_input('Enter Inflation Data', format="%.4f")
+st.title("Prediksi Harga Emas")
+st.write("Prediksi harga emas berdasarkan IHSG, Inflasi, dan Kurs Dollar menggunakan model Decision Tree, Random Forest, atau AdaBoost.")
 
-# Memungkinkan pengguna memilih model yang akan digunakan untuk prediksi
-model_option = st.selectbox("Choose Model for Prediction:", ['Decision Tree', 'Random Forest', 'AdaBoost'])
+# Input pengguna
+ihsg = st.number_input('Masukkan Nilai IHSG', format="%.2f")
+kurs_jual = st.number_input('Masukkan Kurs Jual', format="%.2f")
+data_inflasi = st.number_input('Masukkan Data Inflasi (dalam persen, contoh: masukkan 3.5 untuk 3,5%)', format="%.2f")
 
-# Menentukan model berdasarkan pilihan pengguna
-if model_option == 'Decision Tree':
-    model = dt_model
-elif model_option == 'Random Forest':
-    model = rf_model
-else:  # 'AdaBoost'
-    model = ada_model
+model_option = st.selectbox("Pilih Model untuk Prediksi:", ['Decision Tree', 'Random Forest', 'AdaBoost'])
 
-# Tombol untuk melakukan prediksi
-predict_btn = st.button("Predict Price")
+# Memilih model berdasarkan pilihan pengguna
+model = {'Decision Tree': dt_model, 'Random Forest': rf_model, 'AdaBoost': ada_model}[model_option]
 
-# Prediksi dan menampilkan hasil
-if predict_btn:
-    # Membuat prediksi
-    inputs = np.array([[ihsg, kurs_jual, data_inflasi]])
+# Tombol prediksi
+if st.button("Prediksi Harga"):
+    inflasi_desimal = data_inflasi / 100  # Konversi inflasi ke bentuk desimal
+    inputs = np.array([[ihsg, kurs_jual, inflasi_desimal]])
     predicted_price = model.predict(inputs)[0]
     
-    # Menampilkan hasil prediksi
     st.write("")
-    st.subheader(f"Predicted Gold Price: Rp {predicted_price:,.2f} using {model_option}")
+    st.subheader(f"Harga Emas yang Diprediksi: Rp {predicted_price:,.2f} menggunakan model {model_option}")
